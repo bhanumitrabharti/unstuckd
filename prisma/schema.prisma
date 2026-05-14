@@ -1,0 +1,59 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String?   @unique
+  phone     String?   @unique
+  type      UserType  @default(CLIENT)
+  createdAt DateTime  @default(now())
+  sessions  Session[]
+}
+
+enum UserType {
+  CLIENT
+  EXPERT
+}
+
+model Expert {
+  id            String   @id @default(cuid())
+  name          String
+  expertise     String[]
+  tier          Tier     @default(COMMUNITY)
+  rating        Float    @default(0.0)
+  hourlyRate    Int
+  sessions      Session[]
+}
+
+enum Tier {
+  COMMUNITY
+  VERIFIED
+  PREMIUM
+}
+
+model Session {
+  id          String        @id @default(cuid())
+  status      SessionStatus @default(CREATED)
+  problemDesc String
+  amount      Int
+  clientId    String
+  client      User          @relation(fields: [clientId], references: [id])
+  expertId    String?
+  expert      Expert?       @relation(fields: [expertId], references: [id])
+  createdAt   DateTime      @default(now())
+}
+
+enum SessionStatus {
+  CREATED
+  MATCHED
+  STARTED
+  COMPLETED
+  DISPUTED
+  RESOLVED
+}
